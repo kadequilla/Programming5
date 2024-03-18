@@ -1,0 +1,161 @@
+﻿@page "/employee-page"
+@using Service.Entity
+@using Service.Enums
+@using Services.Service.Implementations
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+
+<h3>Employee</h3>
+<br />  
+
+@if(employees is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <Button Size="Size.Small" Color="ButtonColor.Primary" Class="mb-3" @onclick="(e=>OnShowModalClick(modalAdd))"> Add Employee </Button>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Salary</th>
+                <th>Department</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in employees!)
+            {
+                <tr>
+                    <td>@employee.EmployeeId</td>
+                    <td>@employee.FirstName @employee.LastName</td>
+                    <td>@employee.Salary</td>
+                    <td>@employee.Department</td>
+                    <td>
+                        <Button Size="Size.Small" Color="ButtonColor.Secondary" Class="mb-3" @onclick="(e=>Remove(employee.EmployeeId))"> 
+                            Remove 
+                        </Button>
+                        <Button Size="Size.Small" Color="ButtonColor.Secondary" Class="mb-3" @onclick="(e=>OnShowDepartmentModalClick(modalAssignDep,employee))"> 
+                            Assign Department 
+                        </Button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<Modal @ref="modalAdd" Title="Add Employee">
+    <BodyTemplate>
+        <form>
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" class="form-control" id="firstName" @bind="employee.FirstName">
+            </div>
+            <br />
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" class="form-control" id="lastName" @bind="employee.LastName">
+            </div>
+            <br />
+            <div class="form-group">
+                <label for="salary">Salary</label>
+                <input type="number" class="form-control" id="salary" @bind="employee.Salary">
+            </div>
+            <hr />
+            <Button Size=Size.Small Color="ButtonColor.Secondary" @onclick="(e=>OnHideModalClick(modalAdd))">Close</Button>
+            <Button Size=Size.Small Color="ButtonColor.Primary" @onclick="Add">Save changes</Button>
+        </form>
+    </BodyTemplate>
+</Modal>
+
+<Modal @ref="modalAssignDep" Title="Assign Department">
+    <BodyTemplate>
+        <form>
+            <select class="form-select form-select-md" @bind="selectedDepartment">
+                @foreach (Department enumValue in Enum.GetValues(typeof(Department)))
+                {
+                    <option value="@enumValue">@enumValue.ToString()</option>
+                }
+            </select>
+            <hr />
+            <Button Size=Size.Small Color="ButtonColor.Secondary" @onclick="(e=>OnHideModalClick(modalAssignDep))">Close</Button>
+            <Button Size=Size.Small Color="ButtonColor.Primary" @onclick="(e=>AssignDepartment())">Save changes</Button>
+        </form>
+    </BodyTemplate>
+</Modal>
+
+@code {
+    private EmployeeManager employeeManager = new EmployeeManager();
+    private List<Employee>? employees;
+    private Employee employee = null!;
+
+    private Department selectedDepartment;
+
+    private Modal modalAdd = new Modal();
+    private Modal modalAssignDep = new Modal();
+
+
+    private void LoadEmployees()
+    {
+        employees = GetEmployees();
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using (Employee myObject = new())
+            employee = myObject;
+
+        // Simulate asynchronous loading to demonstrate streaming rendering
+        await Task.Delay(500);
+
+        LoadEmployees();
+    }
+
+    private List<Employee> GetEmployees()
+    {
+        return employees = employeeManager.Display();
+    }
+
+   
+    private void Remove(int id)
+    {
+        employeeManager.Remove(id);
+        LoadEmployees();
+    }
+
+    private async void AssignDepartment()
+    {
+        employeeManager.AssignEmployeeToDepartment(selectedDepartment, this.employee);
+        await OnHideModalClick(modalAssignDep);
+    }
+
+    private async void Add()
+    {
+        employeeManager.Add(employee);
+        await OnHideModalClick(modalAdd);
+        using (Employee myObject = new())
+            employee = myObject;
+    }
+
+    private async Task OnShowDepartmentModalClick(Modal modal, Employee employee)
+    {
+        this.employee = employee;
+        await modal.ShowAsync();
+    }
+
+    private async Task OnShowModalClick(Modal modal)
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick(Modal modal)
+    {
+        await modal.HideAsync();
+    }
+
+}

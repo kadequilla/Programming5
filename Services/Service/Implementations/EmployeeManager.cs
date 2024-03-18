@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿
 using Service.Entity;
 using Service.Enums;
 using Service.Service.Contracts;
 
-namespace Service.Service.Implementations
+namespace Services.Service.Implementations
 {
     /// <summary>
     /// Represents a manager for handling operations on a collection of Employee objects.
@@ -44,7 +42,7 @@ namespace Service.Service.Implementations
             try
             {
                 var employee = _employees.FirstOrDefault(emp => emp.EmployeeId == id);
-                _employees.Remove(employee);
+                _employees.Remove(employee!);
                 return _employees;
             }
             catch (InvalidOperationException)
@@ -77,7 +75,7 @@ namespace Service.Service.Implementations
         public double CalculateTotalSalary()
         {
             double total = 0;
-            _employees.ForEach(emp => total += emp.Salary);
+            _employees.ForEach(emp => total += emp.Salary ?? 0);
             return total;
         }
 
