@@ -42,10 +42,10 @@ namespace Services.Service.Implementations
             try
             {
                 var employee = _employees.FirstOrDefault(emp => emp.EmployeeId == id);
-                _employees.Remove(employee!);
+                if (employee != null) _employees.Remove(employee);
                 return _employees;
             }
-            catch (InvalidOperationException)
+            catch (NullReferenceException)
             {
                 Console.WriteLine("Employee not found.");
                 // Handle the exception or rethrow it if needed

@@ -14,7 +14,7 @@
 }
 else
 {
-    <Button Size="Size.Small" Color="ButtonColor.Primary" Class="mb-3" @onclick="(e=>OnShowModalClick(modalAdd))"> Add Employee </Button>
+    <Button Size="Size.Small" Color="ButtonColor.Primary" Class="mb-3" @onclick="(e=>ShowModalAdd())"> Add Employee </Button>
 
     <table class="table">
         <thead>
@@ -38,7 +38,7 @@ else
                         <Button Size="Size.Small" Color="ButtonColor.Secondary" Class="mb-3" @onclick="(e=>Remove(employee.EmployeeId))"> 
                             Remove 
                         </Button>
-                        <Button Size="Size.Small" Color="ButtonColor.Secondary" Class="mb-3" @onclick="(e=>OnShowDepartmentModalClick(modalAssignDep,employee))"> 
+                        <Button Size="Size.Small" Color="ButtonColor.Secondary" Class="mb-3" @onclick="(e=>BtnAssignDepartmentClick(employee))">
                             Assign Department 
                         </Button>
                     </td>
@@ -48,26 +48,24 @@ else
     </table>
 }
 
-<Modal @ref="modalAdd" Title="Add Employee">
+<Modal @ref="modalAdd" Title="Add Employee" UseStaticBackdrop="true" CloseOnEscape="false" ShowCloseButton="false">
     <BodyTemplate>
         <form>
-            <div class="form-group">
+            <div class="form-group mb-1">
                 <label for="firstName">First Name</label>
-                <input type="text" class="form-control" id="firstName" @bind="employee.FirstName">
+                <input type="text" class="form-control sm" id="firstName" @bind="employee.FirstName">
             </div>
-            <br />
-            <div class="form-group">
+            <div class="form-group mb-1">
                 <label for="lastName">Last Name</label>
-                <input type="text" class="form-control" id="lastName" @bind="employee.LastName">
+                <input type="text" class="form-control sm" id="lastName" @bind="employee.LastName">
             </div>
-            <br />
             <div class="form-group">
                 <label for="salary">Salary</label>
-                <input type="number" class="form-control" id="salary" @bind="employee.Salary">
+                <input type="number" class="form-control sm" id="salary" @bind="employee.Salary">
             </div>
             <hr />
-            <Button Size=Size.Small Color="ButtonColor.Secondary" @onclick="(e=>OnHideModalClick(modalAdd))">Close</Button>
-            <Button Size=Size.Small Color="ButtonColor.Primary" @onclick="Add">Save changes</Button>
+            <Button Size=Size.Small Color="ButtonColor.Secondary" @onclick="(e=>HideModalAdd())">Close</Button>
+            <Button Size=Size.Small Color="ButtonColor.Primary" @onclick="AddEmployee">Save changes</Button>
         </form>
     </BodyTemplate>
 </Modal>
@@ -82,7 +80,7 @@ else
                 }
             </select>
             <hr />
-            <Button Size=Size.Small Color="ButtonColor.Secondary" @onclick="(e=>OnHideModalClick(modalAssignDep))">Close</Button>
+            <Button Size=Size.Small Color="ButtonColor.Secondary" @onclick="(e=>HideModalAdd())">Close</Button>
             <Button Size=Size.Small Color="ButtonColor.Primary" @onclick="(e=>AssignDepartment())">Save changes</Button>
         </form>
     </BodyTemplate>
@@ -91,71 +89,60 @@ else
 @code {
     private EmployeeManager employeeManager = new EmployeeManager();
     private List<Employee>? employees;
-    private Employee employee = null!;
-
+    private Employee employee = null!; //not null
     private Department selectedDepartment;
-
     private Modal modalAdd = new Modal();
     private Modal modalAssignDep = new Modal();
 
-
-    private void LoadEmployees()
-    {
-        employees = GetEmployees();
-
-    }
-
     protected override async Task OnInitializedAsync()
     {
-        using (Employee myObject = new())
-            employee = myObject;
-
         // Simulate asynchronous loading to demonstrate streaming rendering
         await Task.Delay(500);
 
-        LoadEmployees();
+        employees = GetEmployees();
     }
 
     private List<Employee> GetEmployees()
     {
+        //Get emolyees from Service
         return employees = employeeManager.Display();
     }
 
-   
     private void Remove(int id)
     {
+        //Remove employee by id
         employeeManager.Remove(id);
-        LoadEmployees();
     }
 
     private async void AssignDepartment()
     {
+        //Assign employee department
         employeeManager.AssignEmployeeToDepartment(selectedDepartment, this.employee);
-        await OnHideModalClick(modalAssignDep);
+        await modalAssignDep.HideAsync();
     }
 
-    private async void Add()
+    private async void AddEmployee()
     {
-        employeeManager.Add(employee);
-        await OnHideModalClick(modalAdd);
-        using (Employee myObject = new())
-            employee = myObject;
+        employeeManager.Add(this.employee);
+        await modalAdd.HideAsync();
     }
 
-    private async Task OnShowDepartmentModalClick(Modal modal, Employee employee)
+    private async Task BtnAssignDepartmentClick(Employee paramEmp)
     {
-        this.employee = employee;
-        await modal.ShowAsync();
+        this.employee = paramEmp;
+        await modalAssignDep.ShowAsync();
     }
 
-    private async Task OnShowModalClick(Modal modal)
+    private async Task ShowModalAdd()
     {
-        await modal.ShowAsync();
+        this.employee = new();
+        await modalAdd.ShowAsync();
     }
 
-    private async Task OnHideModalClick(Modal modal)
+    private async Task HideModalAdd()
     {
-        await modal.HideAsync();
+        if (this.employee != null) { this.employee.Dispose(); }
+        await modalAdd.HideAsync();
     }
 
 }

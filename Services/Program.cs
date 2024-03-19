@@ -1,5 +1,4 @@
-﻿using Service.Entity;
-using Services.Service.Implementations;
+﻿using Services.Service.Implementations;
 
 namespace Service
 {
@@ -7,27 +6,19 @@ namespace Service
     {
         public static void Main(string[] args)
         {
-            //Functionalities demonstration
-            var employeeManager = new EmployeeManager();
-            //ADD
+            EmployeeManager _manager = new();
+            _manager.Add(new(firstName: "Kim", lastName: "Dequilla", salary: 10000));
+            _manager.Add(new(firstName: "Test", lastName: "Test", salary: 10000));
+            _manager.Add(new(firstName: "Test", lastName: "Test", salary: 10000));
 
-            using (Employee myObject = new(firstName: "Kim", lastName: "Dequilla", salary: 10000))
-                employeeManager.Add(myObject);
+            _manager.Remove(1);
 
-            using (Employee myObject = new(firstName: "Ariel", lastName: "Dequilla", salary: 10000))
-                employeeManager.Add(myObject);
+            Console.WriteLine($"Length {_manager.Display().Count}");
 
-            using (Employee myObject = new(firstName: "John", lastName: "Joe", salary: 10000))
-                employeeManager.Add(myObject);
-
-
-            //Remove
-            employeeManager.Remove(2);
-
-
-            //Display
-            employeeManager.Display();
-            Console.ReadKey();
+            //foreach (var s in _manager.Display())
+            //{
+            //    Console.WriteLine(s.EmployeeId);
+            //}
         }
     }
 }
